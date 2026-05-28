@@ -1,6 +1,6 @@
 dataset:
+  data_dir: './data/case5_lowTi'
   init_sensor_timeframes: [0, 5, 10, 15, 20]
-  data_dir: './data/case5_lowTi_NoAD'  # Directory containing train and test directories
   future_prediction_range:    # For random future prediction: predicts a frame in [max(sensors) + range[0], max(sensors) + range[1]]
   n_fullstate_timeframes_per_chunk: 1   # not for FNO3D
   n_samplings_per_chunk: 1
@@ -8,22 +8,22 @@ dataset:
   # C=3 channels: U, V, W velocity components
   resolution: [120, 256]
   n_sensors: 128
-  sensor_generator: 'LHS'  # AroundCylinder | LHS | WakeShearLHS
-  embedding_generator: 'SoftVoronoi'  # Voronoi | SoftVoronoi | Mask | Vector 
+  sensor_generator: 'WakeShearLHS'  # AroundCylinder | LHS | | WakeShearLHS
+  embedding_generator: 'SoftVoronoi'  # Voronoi | SoftVoronoi | Mask | Vector
   dropout_probabilities: [0.05, 0.04, 0.03, 0.02, 0.01]   # [] for no dropout
   seed: 1
   write_to_disk: true # Set to false if tensors/ are already generated
 
 architecture:
   momdel_name: 'flronet-afno'  # flronet-fno | flronet-afno | flronet-unet | flronet-mlp | flronet-transolver | fno3d | fno | afno | transolver | unet
-  is_cross_attn: false
+  is_cross_attn: true
   # General configs:
   n_channels: 3   # 3-channel: U, V, W velocity components
   embedding_dim: 64
   # FLRONet-FNO & FNO3D -specific configs:
   n_fno_layers: 4
-  n_hmodes: 40   # modes along H=121
-  n_wmodes: 64   # modes along W=256
+  n_hmodes: 24    # modes along H=121
+  n_wmodes: 48    # modes along W=256
   # FNO3D -specific configs:
   n_tmodes: 2
   # Transolver-specific configs:
@@ -35,7 +35,7 @@ architecture:
   # FLRONet-specific configs:
   n_stacked_networks: 2
 
-  use_mean_field: 'operator'  # operator | voronoi_output | branch_output | none
+  use_mean_field: 'voronoi_output'  # operator | voronoi_output | branch_output | none
   mean_field_hidden: 32          # MeanFieldNet CNN 隐藏通道数
   mean_field_time_embed_dim: 32  # 时间差正弦嵌入维度（Δt → softmax 权重）
 
@@ -45,7 +45,7 @@ training:
   val_batch_size: 2
   learning_rate: 1e-4
   n_epochs: 100
-  patience: 10
+  patience: 100
   tolerance: 0.
   save_frequency: 1
   # FLRONet-specific configs:
@@ -54,10 +54,9 @@ training:
   freeze_bias: false
 
 evaluate:
-  from_checkpoint: 'checkpoints_best\.checkpoints_06_2_softvoronoi_W_CATO-trans_inside_config\flronettransolver3.pt'
+  from_checkpoint: '.checkpoints_config\flronetafno11.pt'
   is_load_sensor_pos: true
   sensor_position_path: 'sensor_position_pt/pos.pt'
-  # sensor_position_path: 'sensor_position_pt/pos_LHS.pt'
   is_generate_plots: true
   n_dropout_sensors: 0
   noise_level: 0

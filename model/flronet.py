@@ -809,10 +809,37 @@ class AFNOMeanFieldNet(_MeanFieldBase):
         for layer in self.afno_layers:
             x = layer(x)
         return self.de_patch_embed(x)                                   # (N, C, H, W)
-    
+
+
+# ---------------------------------------------------------------------------
+# VoronoiMeanFieldNet — identity spatial pass-through（用于 voronoi_output 模式）
+# ---------------------------------------------------------------------------
+class VoronoiMeanFieldNet(_MeanFieldBase):
+    """
+    均值场网络 — 无空间处理（voronoi_output 模式）。
+
+    Voronoi 嵌入已在空间维度上插值为全场 (H, W)，因此时间加权聚合后
+    直接输出，不再引入额外的空间参数。
+
+    数据流：
+        sensor_values (B,T_s,C,H,W) × 时间权重 w(B,T_f,T_s)
+            → 加权求和 x̃ (B,T_f,C,H,W)  → 直接输出为 μ
+    """
+
+    def __init__(self, n_channels: int, time_embedding_dim: int = 32):
+        super().__init__(n_channels=n_channels, time_embedding_dim=time_embedding_dim)
+        # 无额外空间参数
+
+    def _spatial_process(self, x: torch.Tensor) -> torch.Tensor:
+        """Identity — Voronoi 已提供全场空间插值，无需再做空间变换。"""
+        return x
+
 
 
 class _BaseFLRONet(nn.Module):
+
+    # Valid string values for use_mean_field
+    _MEAN_FIELD_MODES = ('operator', 'voronoi_output', 'branch_output', 'none')
 
     def __init__(
         self,
@@ -820,15 +847,25 @@ class _BaseFLRONet(nn.Module):
         embedding_dim: int,
         n_stacked_networks: int,
         is_cross_attn: bool = True,   # always True now; kept for checkpoint compat
-        use_mean_field: bool = True,
+        use_mean_field: str = 'operator',
         mean_field_hidden: int = 32,
         mean_field_time_embed_dim: int = 32,
     ):
         super().__init__()
+        # Normalize legacy bool values from old checkpoints:
+        #   True  → 'operator'   (was: use mean field with default backbone)
+        #   False → 'none'       (was: no mean field, scalar bias; internal use by FLRONetMLP)
+        if isinstance(use_mean_field, bool):
+            _use_mean_field_str: str = 'operator' if use_mean_field else 'none'
+        else:
+            _use_mean_field_str = use_mean_field
+        assert _use_mean_field_str in self._MEAN_FIELD_MODES, (
+            f"use_mean_field must be one of {self._MEAN_FIELD_MODES}, got '{use_mean_field}'"
+        )
         self.n_channels: int = n_channels
         self.embedding_dim: int = embedding_dim
         self.n_stacked_networks: int = n_stacked_networks
-        self.use_mean_field: bool = use_mean_field
+        self.use_mean_field: str = _use_mean_field_str
         self.mean_field_hidden: int = mean_field_hidden
         self.mean_field_time_embed_dim: int = mean_field_time_embed_dim
         self.is_cross_attn: bool = is_cross_attn
@@ -839,19 +876,32 @@ class _BaseFLRONet(nn.Module):
             n_outputs=n_stacked_networks,
             is_cross_attn=is_cross_attn,
         )
-        # Dynamic bias: sensor-conditioned mean field μ(x) vs. global learnable bias
+        # Dynamic bias: sensor-conditioned mean field μ(x) vs. global learnable bias.
         # FLRONetMLP operates on point sensors (no H/W), so it always uses the scalar bias.
-        # For spatial models, use_mean_field=True replaces the scalar bias with MeanFieldNet.
-        if use_mean_field:
+        # For spatial models:
+        #   'operator'       → MeanFieldNet (CNN backbone, default)
+        #   'voronoi_output' → VoronoiMeanFieldNet (identity spatial pass-through)
+        #   'branch_output'  → MeanFieldNet (same CNN backbone, input changed in forward)
+        # Subclasses (FLRONetFNO, FLRONetAFNO) will override mean_field_net with their own backbone.
+        # Legacy bool True (old checkpoints) is normalized to 'operator' above.
+        _mode = self.use_mean_field
+        if _mode in ('operator', 'branch_output'):
             self.mean_field_net = MeanFieldNet(
                 n_channels=n_channels,
                 hidden_channels=mean_field_hidden,
                 time_embedding_dim=mean_field_time_embed_dim,
             )
             self.bias = None  # will not be used when mean_field_net is active
+        elif _mode == 'voronoi_output':
+            self.mean_field_net = VoronoiMeanFieldNet(
+                n_channels=n_channels,
+                time_embedding_dim=mean_field_time_embed_dim,
+            )
+            self.bias = None
         else:
             self.mean_field_net = None
             self.bias = nn.Parameter(data=torch.zeros(n_channels, 1, 1))
+
 
     def forward(
         self,
@@ -913,11 +963,21 @@ class _BaseFLRONet(nn.Module):
         for i in range(self.n_stacked_networks):
             output += torch.einsum('nfs,nschw->nfchw', trunk_outputs[i], branch_outputs[i])
 
-        # Compute dynamic bias term
+        # Compute dynamic bias term (mean field μ)
         if self.mean_field_net is not None and sensor_values.ndim == 5:
+            # Determine input to MeanFieldNet based on mode:
+            #   'operator' / 'voronoi_output' → raw Voronoi sensor frames
+            #   'branch_output'               → sum of all BranchNet outputs over T_s
+            if self.use_mean_field == 'branch_output':
+                # Σᵢ V[i]: (B, T_s, C, H, W) — combined BranchNet reconstruction at sensor times
+                mean_field_input: torch.Tensor = sum(branch_outputs)
+            else:
+                # 'operator' or 'voronoi_output': use raw Voronoi embeddings
+                mean_field_input = sensor_values
+
             # μ(x, t_f): (B, T_f, C, H, W) — per-target-frame mean field
             mu = self.mean_field_net(
-                sensor_values=sensor_values,
+                sensor_values=mean_field_input,
                 sensor_times=sensor_timeframes,
                 fullstate_times=fullstate_timeframes,
             )  # (B, T_f, C, H, W)
@@ -928,7 +988,7 @@ class _BaseFLRONet(nn.Module):
                 ).reshape(batch_size, n_fullstate_timeframes, self.n_channels, out_H, out_W)
             output = output + mu  # (B, T_f, C, H, W)
         else:
-            # Fallback: global scalar bias (FLRONetMLP or use_mean_field=False)
+            # Fallback: global scalar bias (FLRONetMLP)
             output = output + self.bias
 
         return output
@@ -953,7 +1013,7 @@ class FLRONetFNO(_BaseFLRONet):
         self,
         n_channels: int, n_fno_layers: int, n_hmodes: int, n_wmodes: int, 
         embedding_dim: int, n_stacked_networks: int, resolution: Tuple[int, int] = (48, 128),
-        is_cross_attn: bool = False, use_mean_field: bool = True,
+        is_cross_attn: bool = False, use_mean_field: str = 'operator',
         mean_field_hidden: int = 32, mean_field_time_embed_dim: int = 32,
     ):
         super().__init__(
@@ -980,13 +1040,19 @@ class FLRONetFNO(_BaseFLRONet):
             ]
         )
 
-        if use_mean_field:
+        # Override parent's default MeanFieldNet with FNO-backbone variant
+        if self.use_mean_field in ('operator', 'branch_output'):
             self.mean_field_net = FNOMeanFieldNet(
                 n_channels=n_channels,
                 n_fno_layers=n_fno_layers,
                 n_hmodes=n_hmodes,
                 n_wmodes=n_wmodes,
                 embedding_dim=embedding_dim,
+                time_embedding_dim=mean_field_time_embed_dim,
+            )
+        elif self.use_mean_field == 'voronoi_output':
+            self.mean_field_net = VoronoiMeanFieldNet(
+                n_channels=n_channels,
                 time_embedding_dim=mean_field_time_embed_dim,
             )
 
@@ -1001,7 +1067,7 @@ class FLRONetAFNO(_BaseFLRONet):
         n_stacked_networks: int,
         resolution: Tuple[int, int] = (48, 128),
         is_cross_attn: bool = False,
-        use_mean_field: bool = True,
+        use_mean_field: str = 'operator',
         mean_field_hidden: int = 32,
         mean_field_time_embed_dim: int = 32,
     ):
@@ -1032,11 +1098,17 @@ class FLRONetAFNO(_BaseFLRONet):
             ]
         )
 
-        if use_mean_field:
+        # Override parent's default MeanFieldNet with AFNO-backbone variant
+        if self.use_mean_field in ('operator', 'branch_output'):
             self.mean_field_net = AFNOMeanFieldNet(
                 n_channels=n_channels,
                 n_fno_layers=n_fno_layers,
                 resolution=resolution,
+                time_embedding_dim=mean_field_time_embed_dim,
+            )
+        elif self.use_mean_field == 'voronoi_output':
+            self.mean_field_net = VoronoiMeanFieldNet(
+                n_channels=n_channels,
                 time_embedding_dim=mean_field_time_embed_dim,
             )
 
@@ -1079,7 +1151,7 @@ class FLRONetUNet(_BaseFLRONet):
         embedding_dim: int,
         n_stacked_networks: int,
         is_cross_attn: bool = False,
-        use_mean_field: bool = True,
+        use_mean_field: str = 'operator',
         mean_field_hidden: int = 32,
         mean_field_time_embed_dim: int = 32,
     ):
@@ -1092,6 +1164,8 @@ class FLRONetUNet(_BaseFLRONet):
             mean_field_hidden=mean_field_hidden,
             mean_field_time_embed_dim=mean_field_time_embed_dim,
         )
+        # FLRONetUNet uses the CNN MeanFieldNet from parent; VoronoiMeanFieldNet already
+        # set by parent for 'voronoi_output' mode — no override needed here.
 
         self.branch_nets = nn.ModuleList(
             modules=[
@@ -1108,7 +1182,7 @@ class FLRONetTransolver(_BaseFLRONet):
         n_channels: int, n_layers: int, n_hidden: int, n_head: int,
         embedding_dim: int, n_stacked_networks: int, resolution: Tuple[int, int] = (48, 128), n_timeframes: int = 5,
         slice_num: int = 32, dropout: float = 0.0, is_cross_attn: bool = False,
-        use_mean_field: bool = True, mean_field_hidden: int = 32, mean_field_time_embed_dim: int = 32,
+        use_mean_field: str = 'operator', mean_field_hidden: int = 32, mean_field_time_embed_dim: int = 32,
     ):
         super().__init__(
             n_channels=n_channels,

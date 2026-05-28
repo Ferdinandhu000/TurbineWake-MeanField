@@ -55,7 +55,8 @@ def main(config: Dict[str, Any], checkpoint_path: str = '.checkpoints', logfile:
     blur_sigma: float                           = float(config['architecture'].get('blur_sigma', 2.0))
     is_TC: bool                                 = bool(config['architecture'].get('is_TC', True))
     is_cross_attn: bool                         = bool(config['architecture'].get('is_cross_attn', False))
-    use_mean_field: bool                        = bool(config['architecture'].get('use_mean_field', True))
+    _umf = config['architecture'].get('use_mean_field', 'operator')
+    use_mean_field: str                         = ('operator' if _umf is True else 'none' if _umf is False else str(_umf))
     mean_field_hidden: int                      = int(config['architecture'].get('mean_field_hidden', 32))
     mean_field_time_embed_dim: int              = int(config['architecture'].get('mean_field_time_embed_dim', 32))
 
@@ -80,7 +81,7 @@ def main(config: Dict[str, Any], checkpoint_path: str = '.checkpoints', logfile:
 
     data_dir = config['dataset'].get('data_dir', './data')
     train_root = os.path.join(data_dir, 'train')
-    val_root = os.path.join(data_dir, 'test')
+    val_root = os.path.join(data_dir, 'val')
 
     train_dataset = CFDDataset(
         root=train_root, 

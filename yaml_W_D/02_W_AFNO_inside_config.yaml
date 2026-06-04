@@ -1,7 +1,7 @@
 dataset:
-  data_dir: './data/case5_lowTi'
+  data_dir: './data/case5_lowTi_0-30'
   init_sensor_timeframes: [0, 5, 10, 15, 20]
-  future_prediction_range: [0, 10] # For random future prediction: predicts a frame in [max(sensors) + range[0], max(sensors) + range[1]]
+  future_prediction_range:    # For random future prediction: predicts a frame in [max(sensors) + range[0], max(sensors) + range[1]]
   n_fullstate_timeframes_per_chunk: 1   # not for FNO3D
   n_samplings_per_chunk: 1
   # Grid: H=121 (y-direction), W=256 (x-direction, x-index 30..285, coord ≥ 0)
@@ -15,8 +15,8 @@ dataset:
   write_to_disk: true # Set to false if tensors/ are already generated
 
 architecture:
-  momdel_name: 'flronet-afno'  # flronet-fno | flronet-afno | flronet-unet | flronet-mlp | flronet-transolver | fno3d | fno | afno | transolver | unet
-  is_cross_attn: true
+  momdel_name: 'afno'  # flronet-fno | flronet-afno | flronet-unet | flronet-mlp | flronet-transolver | fno3d | fno | afno | transolver | unet
+  is_cross_attn: false
   # General configs:
   n_channels: 3   # 3-channel: U, V, W velocity components
   embedding_dim: 64
@@ -35,7 +35,7 @@ architecture:
   # FLRONet-specific configs:
   n_stacked_networks: 2
 
-  use_mean_field: 'operator'  # operator | voronoi_output | branch_output | none
+  use_mean_field: 'none'  # operator | voronoi_output | branch_output | none
   mean_field_hidden: 32          # MeanFieldNet CNN 隐藏通道数
   mean_field_time_embed_dim: 32  # 时间差正弦嵌入维度（Δt → softmax 权重）
 

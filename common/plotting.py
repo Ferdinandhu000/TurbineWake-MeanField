@@ -75,7 +75,7 @@ def plot_frame(
             vmin = -5.0
             vmax = 5.0
         else:
-            vmin = 6.0
+            vmin = 2.0
             vmax = 10.0
         im = ax.imshow(
             frame.squeeze(dim=0),

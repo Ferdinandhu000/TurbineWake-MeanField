@@ -1,6 +1,6 @@
 dataset:
   init_sensor_timeframes: [0, 5, 10, 15, 20]
-  data_dir: './data/case5_lowTi_NoAD'  # Directory containing train and test directories
+  data_dir: './data/case5_lowTi_0-30'  # Directory containing train and test directories
   future_prediction_range:    # For random future prediction: predicts a frame in [max(sensors) + range[0], max(sensors) + range[1]]
   n_fullstate_timeframes_per_chunk: 1   # not for FNO3D
   n_samplings_per_chunk: 1
@@ -8,8 +8,8 @@ dataset:
   # C=3 channels: U, V, W velocity components
   resolution: [120, 256]
   n_sensors: 128
-  sensor_generator: 'LHS'  # AroundCylinder | LHS | WakeShearLHS
-  embedding_generator: 'SoftVoronoi'  # Voronoi | SoftVoronoi | Mask | Vector 
+  sensor_generator: 'WakeShearLHS'  # AroundCylinder | LHS | WakeShearLHS
+  embedding_generator: 'Voronoi'  # Voronoi | SoftVoronoi | Mask | Vector 
   dropout_probabilities: [0.05, 0.04, 0.03, 0.02, 0.01]   # [] for no dropout
   seed: 1
   write_to_disk: true # Set to false if tensors/ are already generated
@@ -54,13 +54,13 @@ training:
   freeze_bias: false
 
 evaluate:
-  from_checkpoint: 'checkpoints_best\.checkpoints_06_2_softvoronoi_W_CATO-trans_inside_config\flronettransolver3.pt'
+  from_checkpoint: '.checkpoints_test02_W_mean-operator_CATO_afno_inside_config\flronetafno3.pt'
   is_load_sensor_pos: true
   sensor_position_path: 'sensor_position_pt/pos.pt'
   # sensor_position_path: 'sensor_position_pt/pos_LHS.pt'
-  is_generate_plots: true
+  is_generate_plots: false
   n_dropout_sensors: 0
-  noise_level: 0
+  noise_level: 0.2
   init_fullstate_timeframes: [17]  # FLRONet-specific, set to null to randomly generate
 
 inference:

@@ -1,7 +1,7 @@
 dataset:
   data_dir: './data/case5_lowTi'
   init_sensor_timeframes: [0, 5, 10, 15, 20]
-  future_prediction_range: [0, 10]# For random future prediction: predicts a frame in [max(sensors) + range[0], max(sensors) + range[1]]
+  future_prediction_range: [0, 10] # For random future prediction: predicts a frame in [max(sensors) + range[0], max(sensors) + range[1]]
   n_fullstate_timeframes_per_chunk: 1   # not for FNO3D
   n_samplings_per_chunk: 1
   # Grid: H=121 (y-direction), W=256 (x-direction, x-index 30..285, coord ≥ 0)

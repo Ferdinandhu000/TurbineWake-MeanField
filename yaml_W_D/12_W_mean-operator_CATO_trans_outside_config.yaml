@@ -1,5 +1,5 @@
 dataset:
-  data_dir: './data/case5_lowTi'
+  data_dir: './data/case5_lowTi_0-30'
   init_sensor_timeframes: [0, 5, 10, 15, 20]
   future_prediction_range: [0, 10] # For random future prediction: predicts a frame in [max(sensors) + range[0], max(sensors) + range[1]]
   n_fullstate_timeframes_per_chunk: 1   # not for FNO3D
@@ -15,7 +15,7 @@ dataset:
   write_to_disk: true # Set to false if tensors/ are already generated
 
 architecture:
-  momdel_name: 'flronet-afno'  # flronet-fno | flronet-afno | flronet-unet | flronet-mlp | flronet-transolver | fno3d | fno | afno | transolver | unet
+  momdel_name: 'flronet-transolver'  # flronet-fno | flronet-afno | flronet-unet | flronet-mlp | flronet-transolver | fno3d | fno | afno | transolver | unet
   is_cross_attn: true
   # General configs:
   n_channels: 3   # 3-channel: U, V, W velocity components

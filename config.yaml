@@ -54,13 +54,13 @@ training:
   freeze_bias: false
 
 evaluate:
-  from_checkpoint: '.checkpoints_test02_W_mean-operator_CATO_afno_inside_config\flronetafno3.pt'
+  from_checkpoint: 'checkpoints_best\.checkpoints_05_W_mean-operator_CATO_afno_inside_config\flronetafno3.pt'
   is_load_sensor_pos: true
   sensor_position_path: 'sensor_position_pt/pos.pt'
   # sensor_position_path: 'sensor_position_pt/pos_LHS.pt'
-  is_generate_plots: false
+  is_generate_plots: true
   n_dropout_sensors: 0
-  noise_level: 0.2
+  noise_level: 0
   init_fullstate_timeframes: [17]  # FLRONet-specific, set to null to randomly generate
 
 inference:

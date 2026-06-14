@@ -401,7 +401,7 @@ class Predictor(Worker, DatasetMixin):
                         target=fullstate_frame.unsqueeze(0).unsqueeze(0),
                     )
                     frame_mean_mae: float = frame_total_mae.item() / fullstate_frame.numel()
-
+    
                     L2_numerator = frame_total_mse.item() ** 0.5  ##
                     L2_denominator = torch.linalg.norm(fullstate_frame).item()  ##
                     frame_mean_L2 = L2_numerator / L2_denominator  ##

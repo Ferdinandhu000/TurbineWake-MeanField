@@ -1380,15 +1380,17 @@ class FNO(nn.Module):
                 idx = torch.searchsorted(times, target_t)
                 
                 if idx == 0:
-                    output[b, t_idx] = reconstructed_frames[b, 0]
+                    t_prev, t_next = times[0], times[1]
+                    w_next = (target_t - t_prev) / (t_next - t_prev)
+                    output[b, t_idx] = (1.0 - w_next) * reconstructed_frames[b, 0] + w_next * reconstructed_frames[b, 1]
                 elif idx == len(times):
-                    output[b, t_idx] = reconstructed_frames[b, -1]
+                    t_prev, t_next = times[-2], times[-1]
+                    w_next = (target_t - t_prev) / (t_next - t_prev)
+                    output[b, t_idx] = (1.0 - w_next) * reconstructed_frames[b, -2] + w_next * reconstructed_frames[b, -1]
                 else:
-                    t_prev = times[idx-1]
-                    t_next = times[idx]
-                    weight_next = (target_t - t_prev) / (t_next - t_prev)
-                    weight_prev = 1.0 - weight_next
-                    output[b, t_idx] = weight_prev * reconstructed_frames[b, idx-1] + weight_next * reconstructed_frames[b, idx]
+                    t_prev, t_next = times[idx-1], times[idx]
+                    w_next = (target_t - t_prev) / (t_next - t_prev)
+                    output[b, t_idx] = (1.0 - w_next) * reconstructed_frames[b, idx-1] + w_next * reconstructed_frames[b, idx]
         
         return output
 
@@ -1474,9 +1476,13 @@ class AFNO(nn.Module):
                 target_t = fullstate_timeframes[b, t_idx]
                 idx = torch.searchsorted(times, target_t)
                 if idx == 0:
-                    output[b, t_idx] = reconstructed_frames[b, 0]
+                    t_prev, t_next = times[0], times[1]
+                    w_next = (target_t - t_prev) / (t_next - t_prev)
+                    output[b, t_idx] = (1.0 - w_next) * reconstructed_frames[b, 0] + w_next * reconstructed_frames[b, 1]
                 elif idx == len(times):
-                    output[b, t_idx] = reconstructed_frames[b, -1]
+                    t_prev, t_next = times[-2], times[-1]
+                    w_next = (target_t - t_prev) / (t_next - t_prev)
+                    output[b, t_idx] = (1.0 - w_next) * reconstructed_frames[b, -2] + w_next * reconstructed_frames[b, -1]
                 else:
                     t_prev, t_next = times[idx-1], times[idx]
                     w_next = (target_t - t_prev) / (t_next - t_prev)
@@ -1561,9 +1567,13 @@ class Transolver(nn.Module):
                 target_t = fullstate_timeframes[b, t_idx]
                 idx = torch.searchsorted(times, target_t)
                 if idx == 0:
-                    final_output[b, t_idx] = reconstructed_frames[b, 0]
+                    t_prev, t_next = times[0], times[1]
+                    w_next = (target_t - t_prev) / (t_next - t_prev)
+                    final_output[b, t_idx] = (1.0 - w_next) * reconstructed_frames[b, 0] + w_next * reconstructed_frames[b, 1]
                 elif idx == len(times):
-                    final_output[b, t_idx] = reconstructed_frames[b, -1]
+                    t_prev, t_next = times[-2], times[-1]
+                    w_next = (target_t - t_prev) / (t_next - t_prev)
+                    final_output[b, t_idx] = (1.0 - w_next) * reconstructed_frames[b, -2] + w_next * reconstructed_frames[b, -1]
                 else:
                     t_prev, t_next = times[idx-1], times[idx]
                     w_next = (target_t - t_prev) / (t_next - t_prev)

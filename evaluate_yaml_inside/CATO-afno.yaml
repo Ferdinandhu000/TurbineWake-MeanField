@@ -5,7 +5,7 @@ dataset:
   n_fullstate_timeframes_per_chunk: 1   # not for FNO3D
   n_samplings_per_chunk: 1
   resolution: [120, 256]
-  n_sensors: 128
+  n_sensors: 96
   sensor_generator: 'WakeShearLHS'  # AroundCylinder | LHS | WakeShearLHS
   embedding_generator: 'Voronoi'  # Voronoi | SoftVoronoi | Mask | Vector
   dropout_probabilities: [0.05, 0.04, 0.03, 0.02, 0.01]   # [] for no dropout
@@ -53,10 +53,10 @@ training:
 
 evaluate:
   # from_checkpoint: 'best_fno3d/fno3d9.pt' 
-  from_checkpoint: 'checkpoints_best\.checkpoints_05_W_mean-operator_CATO_afno_inside_config\flronetafno3.pt'
+  from_checkpoint: 'checkpoints_best\.checkpoints_17_W_CATO-afno_96\flronetafno3.pt'
   # from_checkpoint: 'best_flronetmlp/flronetmlp12.pt'
   # from_checkpoint: 'bestd:\hj\Y-2 S-1\Programming Project\TurbulentFlowNet\sensor_position_pt_flronetunet/flronetunet16.pt'
-  is_load_sensor_pos: true
+  is_load_sensor_pos: false
   sensor_position_path: 'sensor_position_pt/pos_seed1.pt'
   is_generate_plots: false
   n_dropout_sensors: 0

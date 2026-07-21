@@ -1,0 +1,227 @@
+[
+    {
+        "num": "01",
+        "name": "AFNO",
+        "sensors": 64,
+        "rmse": 0.5402746479082693,
+        "mae": 0.3757722016774355,
+        "l2_loss": 0.12422201751442616,
+        "status": "Success"
+    },
+    {
+        "num": "02",
+        "name": "AFNO",
+        "sensors": 96,
+        "rmse": 0.5195446306194416,
+        "mae": 0.3629330240827354,
+        "l2_loss": 0.11946214499348826,
+        "status": "Success"
+    },
+    {
+        "num": "03",
+        "name": "AFNO",
+        "sensors": 128,
+        "rmse": 0.48485231732062956,
+        "mae": 0.3332722795100334,
+        "l2_loss": 0.11148098560255497,
+        "status": "Success"
+    },
+    {
+        "num": "04",
+        "name": "AFNO",
+        "sensors": 160,
+        "rmse": 0.45627218014414217,
+        "mae": 0.31153017958549567,
+        "l2_loss": 0.10490598793376049,
+        "status": "Success"
+    },
+    {
+        "num": "05",
+        "name": "AFNO",
+        "sensors": 196,
+        "rmse": 0.43825349614671116,
+        "mae": 0.290700687658115,
+        "l2_loss": 0.10076720329008368,
+        "status": "Success"
+    },
+    {
+        "num": "06",
+        "name": "Transolver",
+        "sensors": 64,
+        "rmse": 0.5418467764650697,
+        "mae": 0.366190266427747,
+        "l2_loss": 0.12458001223229712,
+        "status": "Success"
+    },
+    {
+        "num": "07",
+        "name": "Transolver",
+        "sensors": 96,
+        "rmse": 0.5302618741296928,
+        "mae": 0.36054902946205086,
+        "l2_loss": 0.12193609383701294,
+        "status": "Success"
+    },
+    {
+        "num": "08",
+        "name": "Transolver",
+        "sensors": 128,
+        "rmse": 0.49755935881285024,
+        "mae": 0.33316946418680965,
+        "l2_loss": 0.11439940880822128,
+        "status": "Success"
+    },
+    {
+        "num": "09",
+        "name": "Transolver",
+        "sensors": 160,
+        "rmse": 0.4602018681473852,
+        "mae": 0.30479518222663665,
+        "l2_loss": 0.10580415416446906,
+        "status": "Success"
+    },
+    {
+        "num": "10",
+        "name": "Transolver",
+        "sensors": 196,
+        "rmse": 0.45564495417751055,
+        "mae": 0.3032040312663968,
+        "l2_loss": 0.10475929920796109,
+        "status": "Success"
+    },
+    {
+        "num": "11",
+        "name": "FLRONet",
+        "sensors": 64,
+        "rmse": 0.5744403950383475,
+        "mae": 0.39684564424976393,
+        "l2_loss": 0.13208330898335668,
+        "status": "Success"
+    },
+    {
+        "num": "12",
+        "name": "FLRONet",
+        "sensors": 96,
+        "rmse": 0.5905275100790485,
+        "mae": 0.422422453010826,
+        "l2_loss": 0.13578238983601867,
+        "status": "Success"
+    },
+    {
+        "num": "13",
+        "name": "FLRONet",
+        "sensors": 128,
+        "rmse": 0.5430405999288417,
+        "mae": 0.3760808193084854,
+        "l2_loss": 0.12485821119271509,
+        "status": "Success"
+    },
+    {
+        "num": "14",
+        "name": "FLRONet",
+        "sensors": 160,
+        "rmse": 0.5274374687453947,
+        "mae": 0.3615693256372367,
+        "l2_loss": 0.12127134302338098,
+        "status": "Success"
+    },
+    {
+        "num": "15",
+        "name": "FLRONet",
+        "sensors": 196,
+        "rmse": 0.5334960451955277,
+        "mae": 0.37815727399364457,
+        "l2_loss": 0.12266268220399242,
+        "status": "Success"
+    },
+    {
+        "num": "16",
+        "name": "CATO-afno",
+        "sensors": 64,
+        "rmse": 0.5435539024248893,
+        "mae": 0.3774053293167185,
+        "l2_loss": 0.12497907934807878,
+        "status": "Success"
+    },
+    {
+        "num": "17",
+        "name": "CATO-afno",
+        "sensors": 96,
+        "rmse": 0.5152643576507714,
+        "mae": 0.35826317727656465,
+        "l2_loss": 0.1184657868730074,
+        "status": "Success"
+    },
+    {
+        "num": "18",
+        "name": "CATO-afno",
+        "sensors": 128,
+        "rmse": 0.48635074584360954,
+        "mae": 0.33165815219850103,
+        "l2_loss": 0.1118226033518941,
+        "status": "Success"
+    },
+    {
+        "num": "19",
+        "name": "CATO-afno",
+        "sensors": 160,
+        "rmse": 0.462950645778998,
+        "mae": 0.312116183102403,
+        "l2_loss": 0.1064389709158085,
+        "status": "Success"
+    },
+    {
+        "num": "20",
+        "name": "CATO-afno",
+        "sensors": 196,
+        "rmse": 0.44826695480508716,
+        "mae": 0.2995050993793087,
+        "l2_loss": 0.10306698561085681,
+        "status": "Success"
+    },
+    {
+        "num": "21",
+        "name": "CATO-trans",
+        "sensors": 64,
+        "rmse": 0.5371029615048959,
+        "mae": 0.3625703742551299,
+        "l2_loss": 0.12349704195795023,
+        "status": "Success"
+    },
+    {
+        "num": "22",
+        "name": "CATO-trans",
+        "sensors": 96,
+        "rmse": 0.5080290171264374,
+        "mae": 0.34579157990407733,
+        "l2_loss": 0.11681884834022771,
+        "status": "Success"
+    },
+    {
+        "num": "23",
+        "name": "CATO-trans",
+        "sensors": 128,
+        "rmse": 0.4881047556825669,
+        "mae": 0.3276220789928233,
+        "l2_loss": 0.11222333885778905,
+        "status": "Success"
+    },
+    {
+        "num": "24",
+        "name": "CATO-trans",
+        "sensors": 160,
+        "rmse": 0.45728817496718077,
+        "mae": 0.3054239780536343,
+        "l2_loss": 0.10514317167660486,
+        "status": "Success"
+    },
+    {
+        "num": "25",
+        "name": "CATO-trans",
+        "sensors": 196,
+        "rmse": 0.44996460240895875,
+        "mae": 0.29926281349844036,
+        "l2_loss": 0.10345881423126099,
+        "status": "Success"
+    }
+]

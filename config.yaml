@@ -7,7 +7,7 @@ dataset:
   # Grid: H=121 (y-direction), W=256 (x-direction, x-index 30..285, coord ≥ 0)
   # C=3 channels: U, V, W velocity components
   resolution: [120, 256]
-  n_sensors: 128
+  n_sensors: 96
   sensor_generator: 'WakeShearLHS'  # AroundCylinder | LHS | WakeShearLHS
   embedding_generator: 'Voronoi'  # Voronoi | SoftVoronoi | Mask | Vector 
   dropout_probabilities: [0.05, 0.04, 0.03, 0.02, 0.01]   # [] for no dropout
@@ -54,11 +54,11 @@ training:
   freeze_bias: false
 
 evaluate:
-  from_checkpoint: 'checkpoints_best\.checkpoints_05_W_mean-operator_CATO_afno_inside_config\flronetafno3.pt'
-  is_load_sensor_pos: true
+  from_checkpoint: 'checkpoints_best\.checkpoints_12_W_FLRONet_96\flronetfno1.pt'
+  is_load_sensor_pos: false
   sensor_position_path: 'sensor_position_pt/pos.pt'
   # sensor_position_path: 'sensor_position_pt/pos_LHS.pt'
-  is_generate_plots: true
+  is_generate_plots: false
   n_dropout_sensors: 0
   noise_level: 0
   init_fullstate_timeframes: [17]  # FLRONet-specific, set to null to randomly generate
